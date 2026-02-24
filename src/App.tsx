@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Prompt, storage } from './lib/storage';
 import { PromptList } from './components/PromptList';
 import { PromptForm } from './components/PromptForm';
-import { Plus, Download, Settings, Terminal } from 'lucide-react';
+import { Plus, Download, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 function App() {
@@ -10,7 +10,6 @@ function App() {
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
   const [editingPrompt, setEditingPrompt] = useState<Prompt | undefined>(undefined);
   const [testInputValue, setTestInputValue] = useState('');
-  const [showDownloadInfo, setShowDownloadInfo] = useState(false);
 
   const [showSettings, setShowSettings] = useState(false);
 
@@ -168,13 +167,6 @@ function App() {
               </AnimatePresence>
             </div>
             <button
-              onClick={() => setShowDownloadInfo(!showDownloadInfo)}
-              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="How to Install"
-            >
-              <Terminal size={20} />
-            </button>
-            <button
               onClick={() => setView('create')}
               className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
@@ -188,32 +180,6 @@ function App() {
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         
-        {/* Download Info Banner */}
-        <AnimatePresence>
-          {showDownloadInfo && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <Terminal size={16} />
-                  How to install as Chrome Extension:
-                </h3>
-                <ol className="list-decimal list-inside space-y-1 ml-1">
-                  <li>Download this project (Build output).</li>
-                  <li>Open Chrome and go to <code>chrome://extensions</code>.</li>
-                  <li>Enable <strong>Developer mode</strong> (top right).</li>
-                  <li>Click <strong>Load unpacked</strong>.</li>
-                  <li>Select the <code>dist</code> folder from the build.</li>
-                </ol>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* View Switcher */}
         <AnimatePresence mode="wait">
           {view === 'list' ? (
