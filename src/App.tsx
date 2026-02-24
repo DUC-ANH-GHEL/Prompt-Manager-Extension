@@ -72,6 +72,52 @@ function App() {
     }
   };
 
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prompts, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "prompt_manager_backup.json");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const fileReader = new FileReader();
+    if (event.target.files && event.target.files[0]) {
+      fileReader.readAsText(event.target.files[0], "UTF-8");
+      fileReader.onload = async (e) => {
+        if (e.target?.result) {
+          try {
+            const importedPrompts = JSON.parse(e.target.result as string);
+            if (Array.isArray(importedPrompts)) {
+              // Basic validation
+              const validPrompts = importedPrompts.filter(p => p.id && p.title && p.content);
+              if (validPrompts.length > 0) {
+                if (confirm(`Tìm thấy ${validPrompts.length} prompt. Bạn có muốn ghi đè (Replace) hay gộp (Merge)?\nOK = Ghi đè\nCancel = Gộp`)) {
+                  await storage.savePrompts(validPrompts);
+                } else {
+                  // Merge logic: add only if ID doesn't exist, or just add all with new IDs? 
+                  // Simple merge: just concat and let user sort it out, or filter by ID.
+                  // Let's filter out duplicates by ID for safety
+                  const currentIds = new Set(prompts.map(p => p.id));
+                  const newPrompts = validPrompts.filter(p => !currentIds.has(p.id));
+                  await storage.savePrompts([...prompts, ...newPrompts]);
+                }
+                await loadPrompts();
+                alert("Nhập dữ liệu thành công!");
+              } else {
+                alert("File không hợp lệ hoặc không có dữ liệu prompt.");
+              }
+            }
+          } catch (error) {
+            alert("Lỗi khi đọc file backup: " + error);
+          }
+        }
+      };
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
       {/* Header */}
@@ -84,19 +130,36 @@ function App() {
             <h1 className="text-lg font-semibold text-gray-900">Prompt Manager</h1>
           </div>
           <div className="flex items-center gap-2">
+            <div className="relative group">
+              <button className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                <Settings size={20} />
+              </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 hidden group-hover:block">
+                <button 
+                  onClick={handleExport}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <Download size={16} /> Backup Data
+                </button>
+                <label className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
+                  <Download size={16} className="rotate-180" /> Restore Data
+                  <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+                </label>
+              </div>
+            </div>
             <button
               onClick={() => setShowDownloadInfo(!showDownloadInfo)}
               className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="How to Install"
             >
-              <Download size={20} />
+              <Terminal size={20} />
             </button>
             <button
               onClick={() => setView('create')}
               className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
               <Plus size={16} />
-              New Prompt
+              New
             </button>
           </div>
         </div>
