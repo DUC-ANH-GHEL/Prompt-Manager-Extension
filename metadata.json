@@ -1,0 +1,5 @@
+{
+  "name": "Prompt Manager Extension",
+  "description": "A Chrome extension to store and manage AI prompts, with auto-fill functionality.",
+  "requestFramePermissions": []
+}
