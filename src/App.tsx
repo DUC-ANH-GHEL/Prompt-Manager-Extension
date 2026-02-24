@@ -12,6 +12,8 @@ function App() {
   const [testInputValue, setTestInputValue] = useState('');
   const [showDownloadInfo, setShowDownloadInfo] = useState(false);
 
+  const [showSettings, setShowSettings] = useState(false);
+
   useEffect(() => {
     loadPrompts();
   }, []);
@@ -80,6 +82,7 @@ function App() {
     document.body.appendChild(downloadAnchorNode); // required for firefox
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+    setShowSettings(false);
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +117,7 @@ function App() {
             alert("Lỗi khi đọc file backup: " + error);
           }
         }
+        setShowSettings(false);
       };
     }
   };
@@ -130,22 +134,38 @@ function App() {
             <h1 className="text-lg font-semibold text-gray-900">Prompt Manager</h1>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative group">
-              <button className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+            <div className="relative">
+              <button 
+                onClick={() => setShowSettings(!showSettings)}
+                className={`p-2 rounded-lg transition-colors ${showSettings ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'}`}
+              >
                 <Settings size={20} />
               </button>
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 hidden group-hover:block">
-                <button 
-                  onClick={handleExport}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <Download size={16} /> Backup Data
-                </button>
-                <label className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
-                  <Download size={16} className="rotate-180" /> Restore Data
-                  <input type="file" accept=".json" className="hidden" onChange={handleImport} />
-                </label>
-              </div>
+              
+              <AnimatePresence>
+                {showSettings && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)}></div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
+                    >
+                      <button 
+                        onClick={handleExport}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <Download size={16} /> Backup Data
+                      </button>
+                      <label className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
+                        <Download size={16} className="rotate-180" /> Restore Data
+                        <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+                      </label>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
             <button
               onClick={() => setShowDownloadInfo(!showDownloadInfo)}
